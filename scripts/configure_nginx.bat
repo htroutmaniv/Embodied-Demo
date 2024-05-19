@@ -38,4 +38,4 @@ if exist %target_conf% (
 )
 
 echo Nginx configured successfully.
-pause
+
