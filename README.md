@@ -57,6 +57,7 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
    ```sh
    install.bat
    ```
+   **Note** The Python installer will likely pop up in the background asking if you want to install. You need to click yes for the install to continue.
 
 This script will automatically set up the backend, frontend, and Nginx servers.
 
