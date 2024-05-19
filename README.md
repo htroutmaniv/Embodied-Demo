@@ -110,7 +110,7 @@ Installation files are included in the "./Installs directory"
    ```sh
    cd backend
    python -m venv venv
-   source venv/scripts/activate
+   call venv/scripts/activate
    pip install -r requirements.txt
    python manage.py migrate
    ```
