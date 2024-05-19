@@ -10,30 +10,11 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
-echo Configuring Nginx...
-call scripts\configure_nginx.bat
-if %errorlevel% neq 0 (
-    echo Failed to configure Nginx.
-    exit /b %errorlevel%
-)
+REM Open a new Command Prompt window to run the second part
+start cmd /k scripts\continue_setup.bat
 
-echo Setting up the backend...
-call scripts\setup_backend.bat
-if %errorlevel% neq 0 (
-    echo Failed to set up the backend.
-    exit /b %errorlevel%
-)
+REM Exit the initial script
+exit
 
-REM Change back to the base directory
-cd /d %BASE_DIR%
 
-echo Setting up the frontend...
-call scripts\setup_frontend.bat
-if %errorlevel% neq 0 (
-    echo Failed to set up the frontend.
-    exit /b %errorlevel%
-)
 
-echo Prerequisites installed successfully.
-echo Installation complete.
-pause
