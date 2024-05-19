@@ -17,6 +17,8 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
+cd ..
+
 echo Setting up the frontend...
 call scripts\setup_frontend.bat
 if %errorlevel% neq 0 (
