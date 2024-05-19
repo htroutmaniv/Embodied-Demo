@@ -57,6 +57,7 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
    ```sh
    install.bat
    ```
+   **Note** The Python installer will likely pop up in the background asking if you want to install. You need to click yes for the install to continue.
 
 This script will automatically set up the backend, frontend, and Nginx servers.
 
@@ -110,9 +111,10 @@ Installation files are included in the "./Installs directory"
    ```sh
    cd backend
    python -m venv venv
-   source venv/scripts/activate
+   call venv/scripts/activate
    pip install -r requirements.txt
    python manage.py migrate
+   cd ..
    ```
 
 6. **Frontend Setup**
@@ -149,8 +151,10 @@ Installation files are included in the "./Installs directory"
 ### Viewing the application
 
 1. Open a browser and navigate to `http://localhost:3000` to view the application.
+2. To utilize VR click the enter VR mode button on the screen
 
-**Note**: Your browser may request permissions. Allow these permissions for proper functioning of the application.
+**Note**: When server is first started it may take a few seconds for the application to load at the specified address
+**Note**: Your browser may request permissions, particularly when entering VR mode. Allow these permissions for proper functioning of the application.
 
 ## Usage
 
