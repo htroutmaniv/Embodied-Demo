@@ -149,8 +149,10 @@ Installation files are included in the "./Installs directory"
 ### Viewing the application
 
 1. Open a browser and navigate to `http://localhost:3000` to view the application.
+2. To utilize VR click the enter VR mode button on the screen
 
-**Note**: Your browser may request permissions. Allow these permissions for proper functioning of the application.
+**Note**: When server is first started it may take a few seconds for the application to load at the specified address
+**Note**: Your browser may request permissions, particularly when entering VR mode. Allow these permissions for proper functioning of the application.
 
 ## Usage
 
