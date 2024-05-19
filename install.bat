@@ -20,9 +20,8 @@ cd ..
 
 echo Setting up the frontend...
 cd frontend
-cd threejs-webxr-frontend
 npm install
-cd ..\..
+cd ..
 
 echo Prerequisites installed successfully.
 echo Installation complete.
