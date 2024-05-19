@@ -45,25 +45,6 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
 
 ### Automated Installation (Recommended)
 
-#### Unix-based Systems
-
-1. Clone the repository:
-
-   ```sh
-   git clone https://github.com/htroutmaniv/Embodied-Demo.git
-   cd Embodied-Demo
-   ```
-
-2. Run the automated install script:
-
-   ```sh
-   ./install.bat
-   ```
-
-This script will automatically set up the backend, frontend, and Nginx servers.
-
-#### Windows
-
 1. Clone the repository:
 
    ```sh
@@ -90,66 +71,9 @@ Before you begin, ensure you have the following installed on your system:
 - **npm** (comes with Node.js)
 - **Nginx**
 
+Installation files are included in the "./Installs directory"
+
 #### Unix-based Systems
-
-1. **Installing Python**
-
-   - Visit the [Python downloads page](https://www.python.org/downloads/).
-   - Download the installer for your operating system.
-   - Run the installer and follow the instructions to complete the installation.
-   - Ensure `pip` is installed with Python (it usually is by default).
-
-2. **Installing Node.js and npm**
-
-   - Visit the [Node.js downloads page](https://nodejs.org/en/download/).
-   - Download the installer for your operating system.
-   - Run the installer and follow the instructions to complete the installation.
-
-3. **Installing Nginx**
-
-   - Visit the [Nginx downloads page](http://nginx.org/en/download.html).
-   - Download the appropriate version for your operating system.
-   - Follow the instructions provided on the website to install Nginx.
-
-4. **Clone the Repository**
-
-   Open a terminal and run the following commands to clone the repository and navigate into the project directory:
-
-   ```sh
-   git clone https://github.com/htroutmaniv/Embodied-Demo.git
-   cd Embodied-Demo
-   ```
-
-5. **Backend Setup**
-
-   Navigate to the backend directory and set up the Python virtual environment:
-
-   ```sh
-   cd backend
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   python manage.py migrate
-   python manage.py runserver  # Starts the server
-   ```
-
-6. **Frontend Setup**
-
-   Navigate to the frontend directory and install the necessary Node.js packages:
-
-   ```sh
-   cd frontend
-   npm install
-   npm start  # Starts the server
-   ```
-
-7. **Nginx Setup**
-
-   - Copy the provided `nginx.conf` file to your Nginx configuration directory.
-   - Modify the root path in `nginx.conf` to match the location of your frontend public directory.
-   - Start Nginx using the appropriate command for your operating system.
-
-#### Windows
 
 1. **Installing Python**
 
