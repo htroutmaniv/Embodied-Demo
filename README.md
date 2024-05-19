@@ -113,6 +113,7 @@ Installation files are included in the "./Installs directory"
    call venv/scripts/activate
    pip install -r requirements.txt
    python manage.py migrate
+   cd ..
    ```
 
 6. **Frontend Setup**
