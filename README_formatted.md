@@ -74,8 +74,8 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
 #### Clone the Repository
 
 ```sh
-git clone <repository_url>
-cd <repository_name>
+git clone <https://github.com/htroutmaniv/Embodied-Demo.git>
+cd <Embodied-Demo>
 ```
 
 #### Backend Setup
