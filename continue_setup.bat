@@ -1,3 +1,8 @@
+@echo off
+
+REM Store the base directory
+set BASE_DIR=%cd%
+
 echo Configuring Nginx...
 call scripts\configure_nginx.bat
 if %errorlevel% neq 0 (
@@ -12,17 +17,6 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
-REM Create a temporary batch file for the second part
-echo @echo off > continue_setup.bat
-echo cd /d %BASE_DIR% >> continue_setup.bat
-echo call setup_continue.bat >> continue_setup.bat
-
-
-@echo off
-
-REM Store the base directory
-set BASE_DIR=%cd%
-
 echo Setting up the frontend...
 call scripts\setup_frontend.bat
 if %errorlevel% neq 0 (
@@ -33,3 +27,5 @@ if %errorlevel% neq 0 (
 echo Prerequisites installed successfully.
 echo Installation complete.
 pause
+
+
