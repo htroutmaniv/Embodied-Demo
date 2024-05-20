@@ -91,6 +91,9 @@ Installation files are included in the "./Installs directory"
    - Download the installer for your operating system.
    - Run the installer and follow the instructions to complete the installation.
    - Ensure `pip` is installed with Python (it usually is by default).
+   - **You MUST ensure that python.exe is added to PATH make sure to check the box on install**
+     ![image](https://github.com/htroutmaniv/Embodied-Demo/assets/98677333/8c2517c9-2247-4098-9ca6-47eddeb9dfe9)
+
 
 2. **Installing Node.js and npm**
 
