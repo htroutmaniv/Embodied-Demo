@@ -66,7 +66,15 @@ This script will automatically set up the backend, frontend, and Nginx servers.
 
 #### Prerequisites
 
-Before you begin, ensure you have the following installed on your system:
+- You will need to download and install git if you do not already have it installed. [https://git-scm.com/downloads]
+- Clone the repository to the directory of your choosing:
+  
+   ```sh
+   git clone https://github.com/htroutmaniv/Embodied-Demo.git
+   cd Embodied-Demo
+   ```
+
+Before you begin, ensure you have the following installed on your system, the recommended installers are included in the project/installs directory:
 
 - **Python** (version 3.8 or higher)
 - **Node.js** (version 14.x or higher)
