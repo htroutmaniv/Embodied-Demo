@@ -616,7 +616,6 @@ class App extends Component {
     });
   };
 
-  // Handle controller input
   handleControllerInput = () => {
     if (this.state.vrSession) {
       const session = this.renderer.xr.getSession();
@@ -634,11 +633,13 @@ class App extends Component {
               this.cameraGroup.updateMatrixWorld(true);
             }
             if (Math.abs(yAxis) > 0.1) {
-              const forward = new Vector3(0, 0, 1).applyQuaternion(
+              const direction = new Vector3(0, 0, 1);
+              direction.applyQuaternion(
                 this.renderer.xr.getCamera().quaternion
               );
-              forward.multiplyScalar(yAxis * movementSensitivity);
-              this.cameraGroup.position.add(forward);
+              direction.applyQuaternion(this.cameraGroup.quaternion); // Apply camera group's rotation
+              direction.multiplyScalar(yAxis * movementSensitivity);
+              this.cameraGroup.position.add(direction);
               this.cameraGroup.updateMatrixWorld(true);
             }
           }
