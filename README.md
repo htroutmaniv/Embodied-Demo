@@ -145,6 +145,7 @@ Installation files are included in the "./Installs directory"
   ```
   2. Back end: Navigate to the backend directory. Run the following command from a command window.
   ```sh
+  venv\Scripts\activate
   python manage.py runserver
   ```
   3. nginx: navigate to your nginx install directory (typically ./nginx/nginx_version/) and run the nginx.exe
