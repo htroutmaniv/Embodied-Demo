@@ -52,7 +52,7 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
    cd Embodied-Demo
    ```
 
-2. Run the automated install script from an administrator propmt:
+2. Run the automated install script from an **administrator** propmt:
 
    ```sh
    install.bat
