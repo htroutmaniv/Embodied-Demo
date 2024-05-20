@@ -161,7 +161,7 @@ Installation files are included in the "./Installs directory"
 - Alternative:
   1. Front end: Navigate to the frontend directory. Run the following command from a command window.
   ```sh
-  npm run
+  npm start
   ```
   2. Back end: Navigate to the backend directory. Run the following command from a command window.
   ```sh
