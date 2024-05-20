@@ -26,49 +26,145 @@ function Refresh-EnvironmentVariables {
 function Install-Prerequisites {
     Write-Output "Installing prerequisites..."
 
-    if (Test-Path "$BaseDir\python-3.12.3-amd64.exe") {
-        Write-Output "Python installer found. Running installer..."
-        Start-Process -FilePath "$BaseDir\python-3.12.3-amd64.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to install Python."
-            exit $LASTEXITCODE
-        }
-        Refresh-EnvironmentVariables
+    # Check and install Python
+    $pythonPath = (Get-Command python -ErrorAction SilentlyContinue)?.Path
+    if ($pythonPath) {
+        Write-Output "Python is already installed at $pythonPath"
     } else {
-        Write-Error "Python installer not found."
-        exit 1
+        if (Test-Path "$BaseDir\Installs\python-3.12.3-amd64.exe") {
+            Write-Output "Python installer found. Running installer..."
+            Start-Process -FilePath "$BaseDir\Installs\python-3.12.3-amd64.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Failed to install Python. Exit code: $LASTEXITCODE"
+                exit $LASTEXITCODE
+            }
+            Refresh-EnvironmentVariables
+        } else {
+            Write-Error "Python installer not found."
+            exit 1
+        }
+    }
+
+    # Check and install Node.js
+    $nodePath = (Get-Command node -ErrorAction SilentlyContinue)?.Path
+    if ($nodePath) {
+        Write-Output "Node.js is already installed at $nodePath"
+    } else {
+        if (Test-Path "$BaseDir\Installs\node-v20.13.1-x64.msi") {
+            Write-Output "Node.js installer found. Running installer..."
+            Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$BaseDir\Installs\node-v20.13.1-x64.msi`" /quiet" -Wait
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "Failed to install Node.js. Exit code: $LASTEXITCODE"
+                exit $LASTEXITCODE
+            }
+            Refresh-EnvironmentVariables
+        } else {
+            Write-Error "Node.js installer not found."
+            exit 1
+        }
+    }
+
+    # Check and install Nginx
+    $nginxPath = "$BaseDir\nginx\nginx-1.25.5"
+    if (Test-Path $nginxPath) {
+        Write-Output "Nginx is already installed at $nginxPath"
+    } else {
+        if (Test-Path "$BaseDir\Installs\nginx-1.25.5.zip") {
+            Write-Output "Nginx installer found. Extracting files..."
+            try {
+                Expand-Archive -Path "$BaseDir\Installs\nginx-1.25.5.zip" -DestinationPath "$BaseDir\nginx" -Force
+            } catch {
+                Write-Error "Failed to extract Nginx. Error: $_"
+                exit 1
+            }
+        } else {
+            Write-Error "Nginx installer not found."
+            exit 1
+        }
     }
 
     Write-Output "Prerequisites installed successfully."
 }
 
+
+
 # Function to configure Nginx
 function Configure-Nginx {
     Write-Output "Configuring Nginx..."
-    # Example Nginx configuration commands (update as needed)
-    Copy-Item -Path "$BaseDir\nginx\nginx.conf" -Destination "C:\nginx\conf\nginx.conf" -Force
+
+    $nginxConfPath = "$BaseDir\nginx\nginx.conf"
+    $nginxDestPath = "$BaseDir\nginx\nginx-1.25.5\conf\nginx.conf"
+    $rootPath = "$BaseDir\frontend\src"
+
+    # Copy the nginx.conf file
+    Copy-Item -Path $nginxConfPath -Destination $nginxDestPath -Force
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to configure Nginx."
+        Write-Error "Failed to copy nginx.conf."
         exit $LASTEXITCODE
     }
+
+    # Replace ROOT_PATH_PLACEHOLDER with the actual root path
+    $nginxConfContent = Get-Content -Path $nginxDestPath
+    $nginxConfContent = $nginxConfContent -replace 'ROOT_PATH_PLACEHOLDER', [regex]::Escape($rootPath)
+    $nginxConfContent | Set-Content -Path $nginxDestPath
+
     Write-Output "Nginx configured successfully."
 }
 
-# Function to set up the backend
+
 function Setup-Backend {
     Write-Output "Setting up the backend..."
     Set-Location "$BaseDir\backend"
 
-    Run-Command "python -m venv venv" "Failed to create virtual environment."
-    .\venv\Scripts\Activate.ps1
+    # Check if Python is installed by attempting to create a virtual environment
+    Run-Command "python --version" "Python is not installed or not found in PATH."
 
-    Run-Command "pip install -r requirements.txt" "Failed to install backend dependencies."
-    Run-Command "python manage.py migrate" "Failed to run database migrations."
+    # Create a virtual environment
+    Run-Command "python -m venv venv" "Failed to create virtual environment."
+
+    # Activate the virtual environment
+    $activateScript = ".\venv\Scripts\Activate.ps1"
+    if (Test-Path $activateScript) {
+        & $activateScript
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to activate virtual environment."
+            exit $LASTEXITCODE
+        }
+    } else {
+        Write-Error "Activation script not found."
+        exit 1
+    }
+
+    # Install backend dependencies
+    if (Test-Path "requirements.txt") {
+        Run-Command "pip install -r requirements.txt" "Failed to install backend dependencies."
+    } else {
+        Write-Error "requirements.txt not found."
+        exit 1
+    }
+
+    # Run database migrations
+    if (Test-Path "manage.py") {
+        Run-Command "python manage.py migrate" "Failed to run database migrations."
+    } else {
+        Write-Error "manage.py not found."
+        exit 1
+    }
 
     Write-Output "Backend setup successful."
-    & .\venv\Scripts\deactivate.ps1
+
+    # Deactivate the virtual environment
+    $deactivateScript = ".\venv\Scripts\deactivate.ps1"
+    if (Test-Path $deactivateScript) {
+        & $deactivateScript
+    } else {
+        Write-Error "Deactivation script not found."
+    }
+
+    # Return to the base directory
     Set-Location $BaseDir
 }
+
 
 # Function to set up the frontend
 function Setup-Frontend {
