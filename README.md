@@ -117,6 +117,8 @@ Installation files are included in the "./Installs directory"
 
    Navigate to the backend directory and set up the Python virtual environment:
 
+   **NOTE:** Using an **ADMINISTRATOR** prompt to run this command is recommended.
+
    ```sh
    cd backend
    python -m venv venv
@@ -126,16 +128,18 @@ Installation files are included in the "./Installs directory"
    cd ..
    ```
 
-6. **Frontend Setup**
+7. **Frontend Setup**
 
    Navigate to the frontend directory and install the necessary Node.js packages:
+
+   **NOTE:** Using an **ADMINISTRATOR** prompt to run this command is recommended.
 
    ```sh
    cd frontend
    npm install
    ```
 
-7. **Nginx Setup**
+9. **Nginx Setup**
 
    - Copy the provided `nginx.conf` file from "./nginx" directory to your Nginx install configuration directory (typically ./nginx/nginx_version/conf/) this will replace the default config with the template.
    - Modify the root path in `nginx.conf` to match the location of your frontend public directory.![image](https://github.com/htroutmaniv/Embodied-Demo/assets/98677333/857c2353-f3cb-4617-ab57-94c4c392bf41)
