@@ -42,6 +42,7 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
 - `API.js`: Manages API requests to the backend.
 
 ## Installation Instructions
+**NOTE: INTERNET CONNECTION REQUIRED**
 
 ### Automated Installation (Recommended)
 
