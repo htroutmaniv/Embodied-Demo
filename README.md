@@ -55,7 +55,7 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
 2. Run the automated install script:
 
    ```sh
-   install.ps1
+   install.bat
    ```
    **Note** The Python installer will likely pop up in the background asking if you want to install. You need to click yes for the install to continue.
 
