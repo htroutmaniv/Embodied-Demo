@@ -180,12 +180,25 @@ function Setup-Backend {
 
 
 
-# Function to set up the frontend
 function Setup-Frontend {
     Write-Output "Setting up the frontend..."
     Set-Location "$BaseDir\frontend"
 
+    # Install frontend dependencies
     Run-Command "npm install" "Failed to install frontend dependencies."
+
+    # Check for outdated packages
+    Write-Output "Checking for outdated packages..."
+    Run-Command "npm outdated" "Failed to check for outdated packages."
+
+    # Update all packages to the latest versions based on version ranges in package.json
+    Write-Output "Updating packages..."
+    Run-Command "npm update" "Failed to update packages."
+
+    # Check for and fix security vulnerabilities
+    Write-Output "Checking for security vulnerabilities..."
+    Run-Command "npm audit" "Failed to check for security vulnerabilities."
+    Run-Command "npm audit fix" "Failed to fix security vulnerabilities."
 
     Write-Output "Frontend setup successful."
     Set-Location $BaseDir
