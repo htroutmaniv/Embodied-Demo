@@ -138,7 +138,11 @@ Installation files are included in the "./Installs directory"
 7. **Nginx Setup**
 
    - Copy the provided `nginx.conf` file from "./nginx" directory to your Nginx install configuration directory (typically ./nginx/nginx_version/conf/) this will replace the default config with the template.
-   - Modify the root path in `nginx.conf` to match the location of your frontend public directory.
+   - Modify the root path in `nginx.conf` to match the location of your frontend public directory.![image](https://github.com/htroutmaniv/Embodied-Demo/assets/98677333/857c2353-f3cb-4617-ab57-94c4c392bf41)
+
+   **NOTE:** The new root path should be a full path, something like ![image](https://github.com/htroutmaniv/Embodied-Demo/assets/98677333/d67a9a3c-d3e7-4881-979b-5124909dc142)
+
+
 
 ## Running the Application
 
