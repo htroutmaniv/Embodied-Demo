@@ -26,36 +26,33 @@ function Refresh-EnvironmentVariables {
 function Install-Prerequisites {
     Write-Output "Installing prerequisites..."
 
-    # Check and install Python
-    $pythonPath = (Get-Command python -ErrorAction SilentlyContinue)?.Path
-    if ($pythonPath) {
-        Write-Output "Python is already installed at $pythonPath"
-    } else {
-        if (Test-Path "$BaseDir\Installs\python-3.12.3-amd64.exe") {
-            Write-Output "Python installer found. Running installer..."
-            Start-Process -FilePath "$BaseDir\Installs\python-3.12.3-amd64.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "Failed to install Python. Exit code: $LASTEXITCODE"
-                exit $LASTEXITCODE
-            }
-            Refresh-EnvironmentVariables
-        } else {
-            Write-Error "Python installer not found."
-            exit 1
+    # Install Python
+    if (Test-Path "$BaseDir\Installs\python-3.12.3-amd64.exe") {
+        Write-Output "Python installer found. Running installer..."
+        $process = Start-Process -FilePath "$BaseDir\Installs\python-3.12.3-amd64.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait -PassThru
+        if ($process.ExitCode -ne 0) {
+            Write-Error "Failed to install Python. Exit code: $($process.ExitCode)"
+            exit $process.ExitCode
         }
+        Refresh-EnvironmentVariables
+    } else {
+        Write-Error "Python installer not found."
+        exit 1
     }
 
-    # Check and install Node.js
-    $nodePath = (Get-Command node -ErrorAction SilentlyContinue)?.Path
+    # Check for existing Node.js installation
+    $nodePath = Get-Command node -ErrorAction SilentlyContinue
     if ($nodePath) {
-        Write-Output "Node.js is already installed at $nodePath"
+        Write-Output "Node.js is already installed at $($nodePath.Source)"
     } else {
+        # Install Node.js
         if (Test-Path "$BaseDir\Installs\node-v20.13.1-x64.msi") {
             Write-Output "Node.js installer found. Running installer..."
-            Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$BaseDir\Installs\node-v20.13.1-x64.msi`" /quiet" -Wait
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "Failed to install Node.js. Exit code: $LASTEXITCODE"
-                exit $LASTEXITCODE
+            $logPath = "$BaseDir\Installs\nodejs_install.log"
+            $process = Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$BaseDir\Installs\node-v20.13.1-x64.msi`" /quiet /l*v `"$logPath`"" -Wait -PassThru
+            if ($process.ExitCode -ne 0) {
+                Write-Error "Failed to install Node.js. Exit code: $($process.ExitCode). Check the log at $logPath for details."
+                exit $process.ExitCode
             }
             Refresh-EnvironmentVariables
         } else {
@@ -64,11 +61,12 @@ function Install-Prerequisites {
         }
     }
 
-    # Check and install Nginx
+    # Check for existing Nginx installation
     $nginxPath = "$BaseDir\nginx\nginx-1.25.5"
     if (Test-Path $nginxPath) {
         Write-Output "Nginx is already installed at $nginxPath"
     } else {
+        # Install Nginx
         if (Test-Path "$BaseDir\Installs\nginx-1.25.5.zip") {
             Write-Output "Nginx installer found. Extracting files..."
             try {
@@ -88,6 +86,7 @@ function Install-Prerequisites {
 
 
 
+
 # Function to configure Nginx
 function Configure-Nginx {
     Write-Output "Configuring Nginx..."
@@ -96,28 +95,43 @@ function Configure-Nginx {
     $nginxDestPath = "$BaseDir\nginx\nginx-1.25.5\conf\nginx.conf"
     $rootPath = "$BaseDir\frontend\src"
 
+    # Ensure the destination directory exists
+    $nginxDestDir = [System.IO.Path]::GetDirectoryName($nginxDestPath)
+    if (-not (Test-Path $nginxDestDir)) {
+        Write-Output "Creating destination directory: $nginxDestDir"
+        New-Item -ItemType Directory -Path $nginxDestDir -Force
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to create destination directory: $nginxDestDir"
+            exit $LASTEXITCODE
+        }
+    }
+
     # Copy the nginx.conf file
-    Copy-Item -Path $nginxConfPath -Destination $nginxDestPath -Force
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to copy nginx.conf."
-        exit $LASTEXITCODE
+    try {
+        Copy-Item -Path $nginxConfPath -Destination $nginxDestPath -Force
+    } catch {
+        Write-Error "Failed to copy nginx.conf. Error: $_"
+        exit 1
     }
 
     # Replace ROOT_PATH_PLACEHOLDER with the actual root path
-    $nginxConfContent = Get-Content -Path $nginxDestPath
-    $nginxConfContent = $nginxConfContent -replace 'ROOT_PATH_PLACEHOLDER', [regex]::Escape($rootPath)
-    $nginxConfContent | Set-Content -Path $nginxDestPath
+    try {
+        $nginxConfContent = Get-Content -Path $nginxDestPath
+        $nginxConfContent = $nginxConfContent -replace 'ROOT_PATH_PLACEHOLDER', [regex]::Escape($rootPath)
+        $nginxConfContent | Set-Content -Path $nginxDestPath
+    } catch {
+        Write-Error "Failed to update nginx.conf with the root path. Error: $_"
+        exit 1
+    }
 
     Write-Output "Nginx configured successfully."
 }
 
 
+
 function Setup-Backend {
     Write-Output "Setting up the backend..."
     Set-Location "$BaseDir\backend"
-
-    # Check if Python is installed by attempting to create a virtual environment
-    Run-Command "python --version" "Python is not installed or not found in PATH."
 
     # Create a virtual environment
     Run-Command "python -m venv venv" "Failed to create virtual environment."
@@ -154,9 +168,8 @@ function Setup-Backend {
     Write-Output "Backend setup successful."
 
     # Deactivate the virtual environment
-    $deactivateScript = ".\venv\Scripts\deactivate.ps1"
-    if (Test-Path $deactivateScript) {
-        & $deactivateScript
+    if ($function:deactivate) {
+        deactivate
     } else {
         Write-Error "Deactivation script not found."
     }
@@ -164,6 +177,7 @@ function Setup-Backend {
     # Return to the base directory
     Set-Location $BaseDir
 }
+
 
 
 # Function to set up the frontend
