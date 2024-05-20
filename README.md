@@ -52,12 +52,12 @@ The frontend is a React application that uses Three.js for rendering 3D graphics
    cd Embodied-Demo
    ```
 
-2. Run the automated install script:
+2. Run the automated install script from an administrator propmt:
 
    ```sh
    install.bat
    ```
-   **Note** The Python installer will likely pop up in the background asking if you want to install. You need to click yes for the install to continue.
+   **Note** It's important to use an administrator prompt or have proper admin credentials when running the install.
 
 This script will automatically set up the backend, frontend, and Nginx servers.
 
