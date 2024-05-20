@@ -102,7 +102,7 @@ Installation files are included in the "./Installs directory"
 
    - Visit the [Nginx downloads page](http://nginx.org/en/download.html).
    - Download the appropriate version for your operating system.
-   - Unzip the directory so that the resultting folder is placed in project/installs, that should leave you with project/installs/nginx-VERSION/
+   - Unzip the directory so that the resultting folder is placed in project/nginx, that should leave you with project/nginx/nginx-VERSION/
 
 4. **Clone the Repository**
 
