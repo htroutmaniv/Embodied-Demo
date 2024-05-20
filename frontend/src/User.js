@@ -111,7 +111,7 @@ export class User {
     const material = new MeshPhysicalMaterial({
       color: Math.random() * 0xffffff,
     });
-    material.roughness = randFloat(0.2, 0.8);
+    material.roughness = randFloat(0, 0.4);
     const mesh = new Mesh(randomGeometry, material);
     mesh.position.copy(
       new Vector3(randFloat(-5, 5), randFloat(-5, 5), randFloat(-5, 5))
@@ -140,7 +140,7 @@ export class User {
     const textGeometry = new TextGeometry(combinedText, {
       font: font,
       size: 0.2,
-      height: 0.01,
+      depth: 0.01,
     });
     const textMesh = new Mesh(textGeometry, textMaterial);
     textMesh.renderOrder = 999;
@@ -203,6 +203,9 @@ export class User {
 
   // Method to update the scaling of the mesh
   updateScale(delta) {
+    if (!this.isSqueezing && this.mesh.scale == this.mesh.targetScale) {
+      return false;
+    }
     const targetScale = this.isSqueezing
       ? this.squashScale
       : this.originalScale;

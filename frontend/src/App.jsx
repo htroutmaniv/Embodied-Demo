@@ -52,6 +52,7 @@ class App extends Component {
 
   // React lifecycle method - invoked once the component has been mounted
   componentDidMount() {
+    console.log('mounted');
     this.initThreeJS();
     this.fetchMultipleUserData();
     this.addEventListeners();
@@ -60,8 +61,11 @@ class App extends Component {
   // React lifecycle method - invoked before the component is unmounted
   componentWillUnmount() {
     this.removeEventListeners();
-    if (this.mountRef.current) {
-      this.mountRef.current.removeChild(this.renderer.domElement);
+
+    if (this.mountRef.current && this.renderer && this.renderer.domElement) {
+      if (this.mountRef.current.contains(this.renderer.domElement)) {
+        this.mountRef.current.removeChild(this.renderer.domElement);
+      }
     }
   }
 
@@ -77,7 +81,7 @@ class App extends Component {
     this.initLights();
     this.initControllers();
     this.loadHDR();
-    this.addAudioEffect();
+    //this.addAudioEffect();
 
     this.animate();
   };
@@ -132,6 +136,22 @@ class App extends Component {
         this.renderer.xr.addEventListener('sessionend', this.onSessionEnd);
       }
     } else {
+      this.mountRef.current.appendChild(this.renderer.domElement);
+      this.renderer.xr.addEventListener('sessionstart', this.onSessionStart);
+      this.renderer.xr.addEventListener('sessionend', this.onSessionEnd);
+
+      // Create and append the not supported message
+      const notSupportedMessage = document.createElement('div');
+      notSupportedMessage.textContent = 'WebXR immersive-vr not supported';
+      notSupportedMessage.style.position = 'absolute';
+      notSupportedMessage.style.bottom = '0';
+      notSupportedMessage.style.width = '100%';
+      notSupportedMessage.style.textAlign = 'center';
+      notSupportedMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      notSupportedMessage.style.color = 'white';
+      notSupportedMessage.style.padding = '10px 0';
+      this.mountRef.current.appendChild(notSupportedMessage);
+
       console.error('WebXR immersive-vr not supported');
       this.setState({ vrSupported: false });
     }
@@ -370,6 +390,9 @@ class App extends Component {
       true
     );
     this.mountRef.current.addEventListener('pointerup', this.onPointerUp, true);
+    document.addEventListener('pointerdown', this.addAudioEffect, {
+      once: true,
+    });
   };
 
   // Remove event listeners
@@ -407,6 +430,9 @@ class App extends Component {
     // Remove XR session event listeners
     this.renderer.xr.removeEventListener('sessionstart', this.onSessionStart);
     this.renderer.xr.removeEventListener('sessionend', this.onSessionEnd);
+
+    // Remove Audio initializer Listener
+    document.removeEventListener('pointerdown', this.addAudioEffect);
   };
 
   // Handle pointer move events
@@ -542,6 +568,53 @@ class App extends Component {
       false
     );
   };
+  animate = () => {
+    let previousTime = performance.now();
+
+    this.renderer.setAnimationLoop(() => {
+      const currentTime = performance.now();
+      const delta = (currentTime - previousTime) / 1000; // Convert to seconds
+      previousTime = currentTime;
+
+      // Rotate meshes
+      this.rotateMeshes();
+
+      // Handle controller input
+      this.handleControllerInput();
+
+      // Update fireworks with delta time
+      this.fireworksArray.forEach((firework) => firework.update(delta));
+
+      // Update the scaling of each user mesh and mark those below threshold for removal
+      const poppedArray = this.updateUserScales(delta);
+
+      // Remove popped users and create fireworks
+      this.handlePoppedUsers(poppedArray);
+
+      // Render the scene based on VR session state and multiview extension support
+      this.renderScene();
+    });
+  };
+
+  // Rotate meshes in the scene
+  rotateMeshes = () => {
+    this.meshManager.allMeshGroup.rotation.y += 0.002;
+    this.meshManager.userGroup.children.forEach((object) => {
+      if (object.isMesh) {
+        object.rotation.x += 0.004;
+        object.rotation.y += 0.004;
+      }
+    });
+
+    this.meshManager.userDataGroup.children.forEach((object) => {
+      if (!object.isMesh) {
+        const target = this.state.vrSession
+          ? this.cameraGroup.position
+          : this.camera.position;
+        object.lookAt(target);
+      }
+    });
+  };
 
   // Handle controller input
   handleControllerInput = () => {
@@ -551,24 +624,19 @@ class App extends Component {
         const inputSources = session.inputSources;
         for (const inputSource of inputSources) {
           if (inputSource.gamepad) {
-            // Assuming the joystick axes are at indices 2 and 3
-            const [xAxis, yAxis] = [
-              inputSource.gamepad.axes[2],
-              inputSource.gamepad.axes[3],
-            ];
+            const [xAxis, yAxis] = inputSource.gamepad.axes.slice(2, 4);
 
-            // Sensitivity factor to adjust the speed of movement
             const movementSensitivity = 0.1;
             const rotationSensitivity = 0.02;
 
-            // Update the target position based on joystick input
             if (Math.abs(xAxis) > 0.1) {
               this.cameraGroup.rotateY(-xAxis * rotationSensitivity);
               this.cameraGroup.updateMatrixWorld(true);
             }
             if (Math.abs(yAxis) > 0.1) {
-              const forward = new Vector3(0, 0, 1);
-              forward.applyQuaternion(this.renderer.xr.getCamera().quaternion);
+              const forward = new Vector3(0, 0, 1).applyQuaternion(
+                this.renderer.xr.getCamera().quaternion
+              );
               forward.multiplyScalar(yAxis * movementSensitivity);
               this.cameraGroup.position.add(forward);
               this.cameraGroup.updateMatrixWorld(true);
@@ -579,108 +647,73 @@ class App extends Component {
     }
   };
 
-  // Animate the scene
-  animate = () => {
-    let previousTime = performance.now();
-
-    this.renderer.setAnimationLoop(() => {
-      const currentTime = performance.now();
-      const delta = (currentTime - previousTime) / 1000; // Convert to seconds
-      previousTime = currentTime;
-
-      this.rotateMeshes();
-      this.handleControllerInput();
-      this.fireworksArray.forEach((firework) => {
-        firework.update(delta);
-      });
-
-      // Update the scaling of each user mesh and if they are below threshold add them to poppedArray for removal
-      let poppedArray = [];
-      this.meshManager.userGroup.traverse((object) => {
-        if (object.userData) {
-          const user = object.userData;
-          if (user instanceof User) {
-            const popped = user.updateScale(delta);
-            if (popped) {
-              poppedArray.push(user);
-            }
-          }
-        }
-      });
-
-      // Remove any popped meshes from the meshManager and scene after traversal is complete
-      poppedArray.forEach((user) => {
-        const firework = new FireworkEffect(this.scene);
-        const worldPosition = new Vector3();
-        user.mesh.getWorldPosition(worldPosition);
-        firework.play(worldPosition);
-        this.fireworksArray.push(firework);
-
-        this.meshManager.userGroup.remove(user.mesh);
-        this.meshManager.userDataGroup.remove(user.textObject);
-
-        this.popSFX.play();
-
-        // Generate a new user to replace the popped one
-        this.fetchSingleUserData();
-      });
-
-      if (
-        this.state.vrSession &&
-        this.multiviewExtension &&
-        this.multiviewFramebuffer
-      ) {
-        const gl = this.renderer.getContext();
-        const { framebuffer, colorTexture, depthTexture } =
-          this.multiviewFramebuffer;
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-        this.multiviewExtension.framebufferTextureMultiviewOVR(
-          gl.FRAMEBUFFER,
-          gl.COLOR_ATTACHMENT0,
-          colorTexture,
-          0,
-          0,
-          2
-        );
-        this.multiviewExtension.framebufferTextureMultiviewOVR(
-          gl.FRAMEBUFFER,
-          gl.DEPTH_ATTACHMENT,
-          depthTexture,
-          0,
-          0,
-          2
-        );
-
-        this.renderer.render(this.scene, this.renderer.xr.getCamera());
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      } else {
-        this.renderer.render(this.scene, this.camera);
+  // Update the scaling of each user mesh and return those that need to be removed
+  updateUserScales = (delta) => {
+    const poppedArray = [];
+    this.meshManager.userGroup.children.forEach((object) => {
+      const user = object.userData;
+      const popped = user.updateScale(delta);
+      if (popped) {
+        poppedArray.push(user);
       }
+    });
+    return poppedArray;
+  };
+
+  // Handle popped users by removing them and creating fireworks
+  handlePoppedUsers = (poppedArray) => {
+    poppedArray.forEach((user) => {
+      const firework = new FireworkEffect(this.scene);
+      const worldPosition = new Vector3();
+      user.mesh.getWorldPosition(worldPosition);
+      firework.play(worldPosition);
+      this.fireworksArray.push(firework);
+
+      this.meshManager.userGroup.remove(user.mesh);
+      this.meshManager.userDataGroup.remove(user.textObject);
+
+      this.popSFX.play();
+
+      // Generate a new user to replace the popped one
+      this.fetchSingleUserData();
     });
   };
 
-  // Rotate meshes in the scene
-  rotateMeshes = () => {
-    this.meshManager.allMeshGroup.rotation.y += 0.002;
-    this.meshManager.userGroup.traverse((object) => {
-      if (object.isMesh) {
-        object.rotation.x += 0.004;
-        object.rotation.y += 0.004;
-      }
-    });
+  // Render the scene based on VR session state and multiview extension support
+  renderScene = () => {
+    if (
+      this.state.vrSession &&
+      this.multiviewExtension &&
+      this.multiviewFramebuffer
+    ) {
+      const gl = this.renderer.getContext();
+      const { framebuffer, colorTexture, depthTexture } =
+        this.multiviewFramebuffer;
 
-    this.meshManager.userDataGroup.children.forEach((object) => {
-      if (!object.isMesh) {
-        if (this.state.vrSession) {
-          object.lookAt(this.cameraGroup.position);
-        } else {
-          object.lookAt(this.camera.position);
-        }
-      }
-    });
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      this.multiviewExtension.framebufferTextureMultiviewOVR(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        colorTexture,
+        0,
+        0,
+        2
+      );
+      this.multiviewExtension.framebufferTextureMultiviewOVR(
+        gl.FRAMEBUFFER,
+        gl.DEPTH_ATTACHMENT,
+        depthTexture,
+        0,
+        0,
+        2
+      );
+
+      this.renderer.render(this.scene, this.renderer.xr.getCamera());
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   };
 
   // Handle window resize events
