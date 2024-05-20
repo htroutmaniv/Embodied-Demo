@@ -121,6 +121,7 @@ Installation files are included in the "./Installs directory"
    Navigate to the backend directory and set up the Python virtual environment:
 
    **NOTE:** Using an **ADMINISTRATOR** prompt to run this command is recommended.
+   **NOTE:** If you get a python not found error, ensure that you checked the box to add python.exe to PATH during install as noted above.
 
    ```sh
    cd backend
